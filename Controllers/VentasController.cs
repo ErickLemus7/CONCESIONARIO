@@ -48,7 +48,7 @@ namespace Concesionario.Controllers
         // GET: Ventas/Create
         public IActionResult Create()
         {
-            ViewData["VehiculoId"] = new SelectList(_context.Vehiculos, "Id", "Id");
+            ViewData["VehiculoId"] = new SelectList(_context.Vehiculos, "Id", "Modelo");
             return View();
         }
 
@@ -65,7 +65,7 @@ namespace Concesionario.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["VehiculoId"] = new SelectList(_context.Vehiculos, "Id", "Id", venta.VehiculoId);
+            ViewData["VehiculoId"] = new SelectList(_context.Vehiculos, "Id", "Modelo", venta.VehiculoId);
             return View(venta);
         }
 
@@ -82,7 +82,7 @@ namespace Concesionario.Controllers
             {
                 return NotFound();
             }
-            ViewData["VehiculoId"] = new SelectList(_context.Vehiculos, "Id", "Id", venta.VehiculoId);
+            ViewData["VehiculoId"] = new SelectList(_context.Vehiculos, "Id", "Modelo", venta.VehiculoId);
             return View(venta);
         }
 
@@ -118,7 +118,7 @@ namespace Concesionario.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["VehiculoId"] = new SelectList(_context.Vehiculos, "Id", "Id", venta.VehiculoId);
+            ViewData["VehiculoId"] = new SelectList(_context.Vehiculos, "Id", "Modelo", venta.VehiculoId);
             return View(venta);
         }
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Concesionario.Data;
 using Concesionario.Models;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 
 namespace Concesionario.Controllers
 {
@@ -48,8 +49,9 @@ namespace Concesionario.Controllers
         // GET: Vehiculoes/Create
         public IActionResult Create()
         {
-            ViewData["MarcaId"] = new SelectList(_context.Marcas, "Id", "Id");
+            ViewData["MarcaId"] = new SelectList(_context.Marcas, "Id", "Nombre");
             return View();
+
         }
 
         // POST: Vehiculoes/Create
@@ -57,7 +59,7 @@ namespace Concesionario.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,anio,Modelo,cantidadPuertas,MarcaId")] Vehiculo vehiculo)
+        public async Task<IActionResult> Create([Bind("Id,anio,Modelo,cantidadPuertas,MarcaId,Marca.Nombre")] Vehiculo vehiculo)
         {
             if (ModelState.IsValid)
             {
@@ -65,7 +67,7 @@ namespace Concesionario.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["MarcaId"] = new SelectList(_context.Marcas, "Id", "Id", vehiculo.MarcaId);
+            ViewData["MarcaId"] = new SelectList(_context.Marcas, "Id", "Nombre", vehiculo.MarcaId);
             return View(vehiculo);
         }
 
@@ -82,7 +84,7 @@ namespace Concesionario.Controllers
             {
                 return NotFound();
             }
-            ViewData["MarcaId"] = new SelectList(_context.Marcas, "Id", "Id", vehiculo.MarcaId);
+            ViewData["Marca"] = new SelectList(_context.Marcas, "Id", "Nombre", vehiculo.MarcaId );
             return View(vehiculo);
         }
 
@@ -91,18 +93,44 @@ namespace Concesionario.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,anio,Modelo,cantidadPuertas,MarcaId")] Vehiculo vehiculo)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,anio,Modelo,cantidadPuertas,MarcaId,Marca.Nombre")] Vehiculo vehiculo)
         {
             if (id != vehiculo.Id)
             {
                 return NotFound();
             }
-
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors);
+                foreach (var error in errors)
+                {
+                    Console.WriteLine(error.ErrorMessage);  // O utiliza tu método preferido para ver los errores, como logs.
+                }
+                ViewData["Marca"] = new SelectList(_context.Marcas, "Id", "Nombre", vehiculo.MarcaId);
+                return View(vehiculo);
+            }
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(vehiculo);
+                    // Aquí puedes cargar el objeto completo desde la base de datos
+                    var vehiculoExistente = await _context.Vehiculos
+                        .Include(v => v.Marca)  // Incluye la marca para obtener todos los datos
+                        .FirstOrDefaultAsync(v => v.Id == id);
+
+                    if (vehiculoExistente == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Actualiza las propiedades
+                    vehiculoExistente.anio = vehiculo.anio;
+                    vehiculoExistente.Modelo = vehiculo.Modelo;
+                    vehiculoExistente.cantidadPuertas = vehiculo.cantidadPuertas;
+                    vehiculoExistente.MarcaId = vehiculo.MarcaId;
+
+
+                    _context.Update(vehiculoExistente);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -118,7 +146,8 @@ namespace Concesionario.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["MarcaId"] = new SelectList(_context.Marcas, "Id", "Id", vehiculo.MarcaId);
+
+            ViewData["MarcaId"] = new SelectList(_context.Marcas, "Id", "Nombre", vehiculo.MarcaId);
             return View(vehiculo);
         }
 
