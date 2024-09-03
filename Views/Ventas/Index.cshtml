@@ -39,7 +39,8 @@
                 @Html.DisplayFor(modelItem => item.Cantidad)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Vehiculo.Id)
+                @Html.DisplayFor(modelItem => item.Vehiculo.Modelo)
+                    @Html.DisplayFor(modelItem => item.Vehiculo.Marca.Nombre)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.FechaVenta)
